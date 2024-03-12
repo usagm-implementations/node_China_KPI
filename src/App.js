@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import * as Bootstrap from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
+import { CalendarRange, XLg } from "react-bootstrap-icons";
 import MultiSelect from "react-select";
 import { DateRangePicker, defaultStaticRanges } from "react-date-range";
 import "react-date-range/dist/styles.css"; // main style file
@@ -11,6 +13,9 @@ import {
   endOfYear,
   addYears,
   isSameDay,
+  startOfQuarter,
+  endOfQuarter,
+  addQuarters,
 } from "date-fns";
 import PieComponent from "./PieComponent";
 import StatsComponent from "./stats";
@@ -40,6 +45,7 @@ function App() {
   const [filteredData, setFilteredData] = useState([]);
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [isCalendarOpen, setCalendarOpen] = useState(false);
+  const [dashboardLoading, setDashboardLoading] = useState(false);
   const [selection, setSelection] = useState([
     {
       startDate: new Date(),
@@ -153,10 +159,24 @@ function App() {
       (range) => range.label !== "Today" && range.label !== "Yesterday"
     ),
     {
-      label: "Last Year",
+      label: "This Quarter",
       range: () => ({
-        startDate: startOfYear(addYears(new Date(), -1)),
-        endDate: endOfYear(addYears(new Date(), -1)),
+        startDate: startOfYear(new Date()),
+        endDate: endOfDay(new Date()),
+      }),
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          isSameDay(range.startDate, definedRange.startDate) &&
+          isSameDay(range.endDate, definedRange.endDate)
+        );
+      },
+    },
+    {
+      label: "Last Quarter",
+      range: () => ({
+        startDate: startOfQuarter(addQuarters(new Date(), -1)),
+        endDate: endOfQuarter(addQuarters(new Date(), -1)),
       }),
       isSelected(range) {
         const definedRange = this.range();
@@ -171,6 +191,20 @@ function App() {
       range: () => ({
         startDate: startOfYear(new Date()),
         endDate: endOfDay(new Date()),
+      }),
+      isSelected(range) {
+        const definedRange = this.range();
+        return (
+          isSameDay(range.startDate, definedRange.startDate) &&
+          isSameDay(range.endDate, definedRange.endDate)
+        );
+      },
+    },
+    {
+      label: "Last Year",
+      range: () => ({
+        startDate: startOfYear(addYears(new Date(), -1)),
+        endDate: endOfYear(addYears(new Date(), -1)),
       }),
       isSelected(range) {
         const definedRange = this.range();
@@ -196,24 +230,19 @@ function App() {
     setCalendarOpen(!isCalendarOpen);
   };
 
-  const calendarContainerRef = useRef(null);
+  const handleSelectFilters = async () => {
+    setDashboardLoading(true);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        calendarContainerRef.current &&
-        !calendarContainerRef.current.contains(event.target)
-      ) {
-        setCalendarOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    try {
+      await fetchData(
+        formatDate(selection[0].startDate),
+        formatDate(selection[0].endDate),
+        true
+      );
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
 
   return (
     <div className="w-100 clearfix">
@@ -228,11 +257,15 @@ function App() {
             className="bg-light border border-1 border-secondary rounded"
             onClick={handleToggleCalendar}
           >
-            <span className="align-middle ms-2">
-              {selection[0].startDate.toLocaleDateString()} -{" "}
-              {selection[0].endDate
-                ? selection[0].endDate.toLocaleDateString()
-                : "Select end date"}
+            <span className="align-middle ms-2 d-flex">
+              <CalendarRange className="m-2" />
+              <div className="flex-grow-1 m-1">
+                {selection[0].startDate.toLocaleDateString()} -{" "}
+                {selection[0].endDate
+                  ? selection[0].endDate.toLocaleDateString()
+                  : "Select end date"}
+              </div>
+              {isCalendarOpen && <XLg className="m-2" />}
             </span>
           </div>
 
@@ -294,13 +327,7 @@ function App() {
             id="selectFilters"
             name="selectFilters"
             className="custom-button"
-            onClick={() =>
-              fetchData(
-                formatDate(selection[0].startDate),
-                formatDate(selection[0].endDate),
-                true
-              )
-            }
+            onClick={handleSelectFilters}
           >
             Select Filters
           </Bootstrap.Button>
@@ -308,38 +335,112 @@ function App() {
       </div>
 
       <div id="dashboard" className="m-2 w-100 clearfix d-flex">
-        {/* <div className="piecharts m-2 float-start flex-fill">
+        {dashboardLoading ? (
+          <div className="text-center">
+            <Spinner animation="border" variant="primary" />
+            <Spinner animation="border" variant="secondary" />
+            <Spinner animation="border" variant="success" />
+            <Spinner animation="border" variant="danger" />
+            <Spinner animation="border" variant="warning" />
+            <Spinner animation="border" variant="info" />
+            <Spinner animation="border" variant="light" />
+            <Spinner animation="border" variant="dark" />
+          </div>
+        ) : (
+          <div className="area m-2 w-100 clearfix d-flex">
+            {isDataFetched && (
+              <RFAVOAComponent data={data} filteredData={filteredData} />
+            )}
+          </div>
+        )}
+        {dashboardLoading ? (
+          <div className="text-center">
+            <Spinner animation="border" variant="danger" />
+            <Spinner animation="border" variant="warning" />
+            <Spinner animation="border" variant="info" />
+          </div>
+        ) : (
+          <div className="stats mx-1 my-2 float-start flex-fill">
+            {isDataFetched && (
+              <StatsComponent
+                data={data}
+                ed={formatDate(selection[0].endDate)}
+              />
+            )}
+          </div>
+        )}
+      </div>
+      {dashboardLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <div className="vrsArea m-2 w-100 clearfix d-flex">
+          {isDataFetched && <VRSIdComponent data={data} />}
+        </div>
+      )}
+
+      {dashboardLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <div className="leaderboard m-2 w-100 clearfix d-flex">
+          {isDataFetched && <LeaderboardComponent data={data} />}
+        </div>
+      )}
+
+      {dashboardLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <div className="kpi m-2 w-100 clearfix d-flex">
+          {isDataFetched && (
+            <KPIComponent data={data} filteredData={filteredData} />
+          )}
+        </div>
+      )}
+
+      {dashboardLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <div className="piecharts m-2 w-100 clearfix d-flex">
           {isDataFetched && (
             <PieComponent data={data} filteredData={filteredData} />
           )}
-        </div> */}
-        <div className="area m-2 w-100 clearfix d-flex">
-          {isDataFetched && (
-            <RFAVOAComponent data={data} filteredData={filteredData} />
-          )}
         </div>
-        <div className="stats mx-1 my-2 float-start flex-fill">
-          {isDataFetched && (
-            <StatsComponent data={data} ed={formatDate(selection[0].endDate)} />
-          )}
-        </div>
-      </div>
-      <div className="vrsArea m-2 w-100 clearfix d-flex">
-        {isDataFetched && <VRSIdComponent data={data} />}
-      </div>
-      <div className="leaderboard m-2 w-100 clearfix d-flex">
-        {isDataFetched && <LeaderboardComponent data={data} />}
-      </div>
-      <div className="kpi m-2 w-100 clearfix d-flex">
-        {isDataFetched && (
-          <KPIComponent data={data} filteredData={filteredData} />
-        )}
-      </div>
-      <div className="piecharts m-2 w-100 clearfix d-flex">
-        {isDataFetched && (
-          <PieComponent data={data} filteredData={filteredData} />
-        )}
-      </div>
+      )}
     </div>
   );
 }

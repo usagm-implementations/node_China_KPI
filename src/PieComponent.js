@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import PieChart from "./PieChart";
 
 const PieComponent = ({ data, filteredData }) => {
+  const [loading, setLoading] = useState(true);
   const chartData = filteredData.length !== 0 ? filteredData : data;
   const calcPct = (elemKey, numsKey, data) => {
     const totals = data.reduce(
@@ -135,6 +137,14 @@ const PieComponent = ({ data, filteredData }) => {
   );
 
   useEffect(() => {
+    const delay = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(delay);
+  }, []);
+
+  useEffect(() => {
     setMainChartSize(chartData === data ? "55%" : "50%");
   }, [chartData, data]);
 
@@ -143,79 +153,94 @@ const PieComponent = ({ data, filteredData }) => {
       <h3 className="mt-1 ms-1" style={{ color: "#81b0d2" }}>
         <u>RFA-VOA Breakdown</u>
       </h3>
-      <div className="pies-01 mt-5 clearfix w-100">
-        <div className="pageviewsPie float-start" style={{ width: "33.33%" }}>
-          <PieChart
-            title="Page Views"
-            center={["55%", "30%"]}
-            size={mainChartSize}
-            data={mainDataPageViews}
-            drilldowns={drilldownDataPageViews}
-          />
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
         </div>
-        <div
-          className="articleViewsPie float-start"
-          style={{ width: "33.33%" }}
-        >
-          <PieChart
-            title="Article Views"
-            center={["50%", "30%"]}
-            size={mainChartSize}
-            data={mainDataArticleViews}
-            drilldowns={drilldownDataArticleViews}
-          />
+      ) : (
+        <div>
+          <div className="pies-01 mt-5 clearfix w-100">
+            <div
+              className="pageviewsPie float-start"
+              style={{ width: "33.33%" }}
+            >
+              <PieChart
+                title="Page Views"
+                center={["55%", "30%"]}
+                size={mainChartSize}
+                data={mainDataPageViews}
+                drilldowns={drilldownDataPageViews}
+              />
+            </div>
+            <div
+              className="articleViewsPie float-start"
+              style={{ width: "33.33%" }}
+            >
+              <PieChart
+                title="Article Views"
+                center={["50%", "30%"]}
+                size={mainChartSize}
+                data={mainDataArticleViews}
+                drilldowns={drilldownDataArticleViews}
+              />
+            </div>
+            <div className="visitsPie float-start" style={{ width: "33.33%" }}>
+              <PieChart
+                title="Visits"
+                center={["55%", "30%"]}
+                size={mainChartSize}
+                data={mainDataVisits}
+                drilldowns={drilldownDataVisits}
+              />
+            </div>
+          </div>
+          <div className="pies-02 mt-5 clearfix w-100">
+            <div
+              className="returnVisitsPie float-start"
+              style={{ width: "33.33%" }}
+            >
+              <PieChart
+                title="Return Visits"
+                center={["55%", "30%"]}
+                size={mainChartSize}
+                data={mainDataReturnVisits}
+                drilldowns={drilldownDataReturnVisits}
+              />
+            </div>
+            <div
+              className="audioPlayPie float-start"
+              style={{ width: "33.33%" }}
+            >
+              <PieChart
+                title="Audio Play"
+                center={["55%", "30%"]}
+                size={mainChartSize}
+                data={mainDataAudioPlay}
+                drilldowns={drilldownDataAudioPlay}
+              />
+            </div>
+            <div
+              className="videoPlayPie float-start"
+              style={{ width: "33.33%" }}
+            >
+              <PieChart
+                title="Video Play"
+                center={["55%", "30%"]}
+                size={mainChartSize}
+                data={mainDataVideoPlay}
+                drilldowns={drilldownDataVideoPlay}
+              />
+            </div>
+          </div>
         </div>
-        <div className="visitsPie float-start" style={{ width: "33.33%" }}>
-          <PieChart
-            title="Visits"
-            center={["55%", "30%"]}
-            size={mainChartSize}
-            data={mainDataVisits}
-            drilldowns={drilldownDataVisits}
-          />
-        </div>
-        {/* <div className="avgTimePie float-start w-25">
-          <PieChart
-            title="Avg. Time Spent on Site Per Visit"
-            center={["50%", "30%"]}
-            size="55%"
-            data={mainDataAvgTime}
-            drilldowns={drilldownDataAvgTime}
-          />
-        </div> */}
-      </div>
-      <div className="pies-02 mt-5 clearfix w-100">
-        <div
-          className="returnVisitsPie float-start"
-          style={{ width: "33.33%" }}
-        >
-          <PieChart
-            title="Return Visits"
-            center={["55%", "30%"]}
-            size={mainChartSize}
-            data={mainDataReturnVisits}
-            drilldowns={drilldownDataReturnVisits}
-          />
-        </div>
-        <div className="audioPlayPie float-start" style={{ width: "33.33%" }}>
-          <PieChart
-            title="Audio Play"
-            center={["55%", "30%"]}
-            size={mainChartSize}
-            data={mainDataAudioPlay}
-            drilldowns={drilldownDataAudioPlay}
-          />
-        </div>
-        <div className="videoPlayPie float-start" style={{ width: "33.33%" }}>
-          <PieChart
-            title="Video Play"
-            center={["55%", "30%"]}
-            size={mainChartSize}
-            data={mainDataVideoPlay}
-            drilldowns={drilldownDataVideoPlay}
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

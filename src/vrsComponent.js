@@ -1,10 +1,12 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import AreaSplineChart from "./areaspline";
 import { getSums, transformData } from "./leaderboard";
 import "./App.css";
 
 const VRSIdComponent = ({ data }) => {
+  const [loading, setLoading] = useState(true);
   const RFACantoneseComponent = useRef(null);
   const RFAMandarinComponent = useRef(null);
   const RFAUyghurComponent = useRef(null);
@@ -105,73 +107,94 @@ const VRSIdComponent = ({ data }) => {
     data
   );
 
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(delay);
+  }, []);
+
   return (
     <div className="vrsTrends clearfix w-100 column">
       <h3 className="mt-1 ms-1" style={{ color: "#81b0d2" }}>
         <u>VRS Id Trends</u>
       </h3>
-      <div className="clearfix w-100 column">
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
         <div className="clearfix w-100 column">
-          <div className="rfa-cantonese float-start" style={{ width: "33%" }}>
-            <AreaSplineChart
-              ref={RFACantoneseComponent}
-              dates={RFACantoneseSeries.dts}
-              nm={`RFA - ${RFACantoneseSeries.field}`}
-              hgt="45%"
-              lgnd={RFACantoneseSeries.legend}
-              areaType=""
-              trendData={RFACantoneseSeries.series}
-            />
+          <div className="clearfix w-100 column">
+            <div className="rfa-cantonese float-start" style={{ width: "33%" }}>
+              <AreaSplineChart
+                ref={RFACantoneseComponent}
+                dates={RFACantoneseSeries.dts}
+                nm={`RFA - ${RFACantoneseSeries.field}`}
+                hgt="45%"
+                lgnd={RFACantoneseSeries.legend}
+                areaType=""
+                trendData={RFACantoneseSeries.series}
+              />
+            </div>
+            <div className="rfa-mandarin float-start" style={{ width: "33%" }}>
+              <AreaSplineChart
+                ref={RFAMandarinComponent}
+                dates={RFAMandarinSeries.dts}
+                nm={`RFA - ${RFAMandarinSeries.field}`}
+                hgt="60%"
+                lgnd={RFAMandarinSeries.legend}
+                areaType=""
+                trendData={RFAMandarinSeries.series}
+                legendItemClick={legendItemClick}
+              />
+            </div>
+            <div className="rfa-Uyghur float-start" style={{ width: "33%" }}>
+              <AreaSplineChart
+                ref={RFAUyghurComponent}
+                dates={RFAUyghurSeries.dts}
+                nm={`RFA - ${RFAUyghurSeries.field}`}
+                hgt="45%"
+                lgnd={RFAUyghurSeries.legend}
+                areaType=""
+                trendData={RFAUyghurSeries.series}
+              />
+            </div>
           </div>
-          <div className="rfa-mandarin float-start" style={{ width: "33%" }}>
-            <AreaSplineChart
-              ref={RFAMandarinComponent}
-              dates={RFAMandarinSeries.dts}
-              nm={`RFA - ${RFAMandarinSeries.field}`}
-              hgt="60%"
-              lgnd={RFAMandarinSeries.legend}
-              areaType=""
-              trendData={RFAMandarinSeries.series}
-              legendItemClick={legendItemClick}
-            />
-          </div>
-          <div className="rfa-Uyghur float-start" style={{ width: "33%" }}>
-            <AreaSplineChart
-              ref={RFAUyghurComponent}
-              dates={RFAUyghurSeries.dts}
-              nm={`RFA - ${RFAUyghurSeries.field}`}
-              hgt="45%"
-              lgnd={RFAUyghurSeries.legend}
-              areaType=""
-              trendData={RFAUyghurSeries.series}
-            />
+          <div className="clearfix w-100 column">
+            <div className="voa-cantonese float-start" style={{ width: "50%" }}>
+              <AreaSplineChart
+                ref={VOACantoneseComponent}
+                dates={VOACantoneseSeries.dts}
+                nm={`VOA - ${VOACantoneseSeries.field}`}
+                hgt="45%"
+                lgnd={VOACantoneseSeries.legend}
+                areaType=""
+                trendData={VOACantoneseSeries.series}
+              />
+            </div>
+            <div className="voa-mandarin float-start" style={{ width: "50%" }}>
+              <AreaSplineChart
+                ref={VOAMandarinComponent}
+                dates={VOAMandarinSeries.dts}
+                nm={`VOA - ${VOAMandarinSeries.field}`}
+                hgt="45%"
+                lgnd={VOAMandarinSeries.legend}
+                areaType=""
+                trendData={VOAMandarinSeries.series}
+              />
+            </div>
           </div>
         </div>
-        <div className="clearfix w-100 column">
-          <div className="voa-cantonese float-start" style={{ width: "50%" }}>
-            <AreaSplineChart
-              ref={VOACantoneseComponent}
-              dates={VOACantoneseSeries.dts}
-              nm={`VOA - ${VOACantoneseSeries.field}`}
-              hgt="45%"
-              lgnd={VOACantoneseSeries.legend}
-              areaType=""
-              trendData={VOACantoneseSeries.series}
-            />
-          </div>
-          <div className="voa-mandarin float-start" style={{ width: "50%" }}>
-            <AreaSplineChart
-              ref={VOAMandarinComponent}
-              dates={VOAMandarinSeries.dts}
-              nm={`VOA - ${VOAMandarinSeries.field}`}
-              hgt="45%"
-              lgnd={VOAMandarinSeries.legend}
-              areaType=""
-              trendData={VOAMandarinSeries.series}
-            />
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

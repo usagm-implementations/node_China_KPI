@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SplineChart from "./spline";
 import { getSums, transformData } from "./leaderboard";
 import "./App.css";
 
 const KPIComponent = ({ data, filteredData }) => {
+  const [loading, setLoading] = useState(true);
   const chartData = filteredData.length !== 0 ? filteredData : data;
   // const sortedData = data.sort(
   //   (a, b) => new Date(a.report_end_date) - new Date(b.report_end_date)
@@ -89,22 +91,43 @@ const KPIComponent = ({ data, filteredData }) => {
     ],
   };
 
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(delay);
+  }, []);
+
   return (
     <div className="kpiTrends clearfix w-100 column">
       <h3 className="mt-1 ms-1" style={{ color: "#81b0d2" }}>
         <u>KPI Trends</u>
       </h3>
-      <div className="clearfix w-100 column">
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
         <div className="clearfix w-100 column">
-          <div className="w-100 rfa">
-            <SplineChart
-              title={RFASeries.field}
-              dates={RFASeries.dts}
-              series={RFASeries.series}
-            />
+          <div className="clearfix w-100 column">
+            <div className="w-100 rfa">
+              <SplineChart
+                title={RFASeries.field}
+                dates={RFASeries.dts}
+                series={RFASeries.series}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

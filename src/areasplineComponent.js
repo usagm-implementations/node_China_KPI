@@ -1,10 +1,12 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import AreaSplineChart from "./areaspline";
 import { getSums, transformData } from "./leaderboard";
 import "./App.css";
 
 const RFAVOAComponent = ({ data, filteredData }) => {
+  const [loading, setLoading] = useState(true);
   const chartData = filteredData.length !== 0 ? filteredData : data;
 
   const RFAComponent = useRef(null);
@@ -61,7 +63,7 @@ const RFAVOAComponent = ({ data, filteredData }) => {
       RFATrend.video_play_e5,
     ],
   };
-  // console.log(JSON.stringify(RFASeries));
+
   const VOATrend = transformData(
     getSums("entity", "VOA", properties, chartData),
     "field",
@@ -82,39 +84,60 @@ const RFAVOAComponent = ({ data, filteredData }) => {
       VOATrend.video_play_e5,
     ],
   };
-  // console.log(JSON.stringify(VOASeries));
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(delay);
+  }, []);
+
   return (
     <div className="rfavoaTrends clearfix w-100 column">
       <h3 className="mt-1 ms-1" style={{ color: "#81b0d2" }}>
         <u>RFA-VOA Trends</u>
       </h3>
-      <div className="clearfix w-100 column">
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
         <div className="clearfix w-100 column">
-          <div className="w-100 rfaArea">
-            <AreaSplineChart
-              ref={RFAComponent}
-              dates={RFASeries.dts}
-              nm={RFASeries.field}
-              hgt="25%"
-              lgnd={RFASeries.legend}
-              areaType="normal"
-              trendData={RFASeries.series}
-            />
-          </div>
-          <div className="w-100 voaArea">
-            <AreaSplineChart
-              ref={VOAComponent}
-              dates={VOASeries.dts}
-              nm={VOASeries.field}
-              hgt="25%"
-              lgnd={VOASeries.legend}
-              areaType="normal"
-              trendData={VOASeries.series}
-              legendItemClick={legendItemClick}
-            />
+          <div className="clearfix w-100 column">
+            <div className="w-100 rfaArea">
+              <AreaSplineChart
+                ref={RFAComponent}
+                dates={RFASeries.dts}
+                nm={RFASeries.field}
+                hgt="25%"
+                lgnd={RFASeries.legend}
+                areaType="normal"
+                trendData={RFASeries.series}
+              />
+            </div>
+            <div className="w-100 voaArea">
+              <AreaSplineChart
+                ref={VOAComponent}
+                dates={VOASeries.dts}
+                nm={VOASeries.field}
+                hgt="25%"
+                lgnd={VOASeries.legend}
+                areaType="normal"
+                trendData={VOASeries.series}
+                legendItemClick={legendItemClick}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

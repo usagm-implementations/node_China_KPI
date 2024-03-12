@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import TrendLine from "./trendline";
 import dayjs from "dayjs";
@@ -149,6 +150,7 @@ export const transformData = (inputList, groupByKey, properties) => {
 };
 
 const LeaderboardComponent = ({ data }) => {
+  const [loading, setLoading] = useState(true);
   let properties = [
     "page_views",
     "article_views",
@@ -216,98 +218,122 @@ const LeaderboardComponent = ({ data }) => {
     VOAMandarinTrend
   );
 
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(delay);
+  }, []);
+
   return (
     <div className="leaderboards clearfix w-100 column">
       <h3 className="mt-1 ms-1" style={{ color: "#81b0d2" }}>
         <u>Leaderboard</u>
       </h3>
-      <table className="table table-dark">
-        <thead style={{ fontSize: "12px" }}>
-          <tr>
-            <th></th>
-            <th className="text-center align-middle">Page Views</th>
-            <th className="text-center align-middle">Article Views</th>
-            <th className="text-center align-middle">Conversion Rate</th>
-            <th className="text-center align-middle">Visits</th>
-            <th className="text-center align-middle">Return Visits</th>
-            <th className="text-center align-middle">Return Visit Rate</th>
-            <th className="text-center align-middle">Audio Play</th>
-            <th className="text-center align-middle">Video Play</th>
-          </tr>
-        </thead>
-        <tbody style={{ fontSize: "15px" }}>
-          {leaders.map((avg, index) => (
-            <tr
-              key={index}
-              className={
-                avg.field === "RFA" || avg.field === "VOA"
-                  ? "highlight-row"
-                  : ""
-              }
-            >
-              <td className="text-center align-middle" style={{ width: "20%" }}>
-                {avg.field}
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.page_views.name}
-                  trendData={avg.page_views.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.article_views.name}
-                  trendData={avg.article_views.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.conversion_rate.name}
-                  trendData={avg.conversion_rate.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.return_visits.name}
-                  trendData={avg.return_visits.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.return_visits.name}
-                  trendData={avg.return_visits.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.return_visit_rate.name}
-                  trendData={avg.return_visit_rate.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.audio_play.name}
-                  trendData={avg.audio_play.data}
-                />
-              </td>
-              <td style={{ width: "10%" }}>
-                <TrendLine
-                  dates={avg.dts}
-                  nm={avg.video_play_e5.name}
-                  trendData={avg.video_play_e5.data}
-                />
-              </td>
+      {loading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <table className="table table-dark">
+          <thead style={{ fontSize: "12px" }}>
+            <tr>
+              <th></th>
+              <th className="text-center align-middle">Page Views</th>
+              <th className="text-center align-middle">Article Views</th>
+              <th className="text-center align-middle">Conversion Rate</th>
+              <th className="text-center align-middle">Visits</th>
+              <th className="text-center align-middle">Return Visits</th>
+              <th className="text-center align-middle">Return Visit Rate</th>
+              <th className="text-center align-middle">Audio Play</th>
+              <th className="text-center align-middle">Video Play</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody style={{ fontSize: "15px" }}>
+            {leaders.map((avg, index) => (
+              <tr
+                key={index}
+                className={
+                  avg.field === "RFA" || avg.field === "VOA"
+                    ? "highlight-row"
+                    : ""
+                }
+              >
+                <td
+                  className="text-center align-middle"
+                  style={{ width: "20%" }}
+                >
+                  {avg.field}
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.page_views.name}
+                    trendData={avg.page_views.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.article_views.name}
+                    trendData={avg.article_views.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.conversion_rate.name}
+                    trendData={avg.conversion_rate.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.return_visits.name}
+                    trendData={avg.return_visits.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.return_visits.name}
+                    trendData={avg.return_visits.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.return_visit_rate.name}
+                    trendData={avg.return_visit_rate.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.audio_play.name}
+                    trendData={avg.audio_play.data}
+                  />
+                </td>
+                <td style={{ width: "10%" }}>
+                  <TrendLine
+                    dates={avg.dts}
+                    nm={avg.video_play_e5.name}
+                    trendData={avg.video_play_e5.data}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };
