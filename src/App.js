@@ -69,7 +69,9 @@ function App() {
     }
 
     const requestPromise = axios
-      .get(`http://localhost:3001/api/data?startDate=${sd}&endDate=${ed}`)
+      .get(
+        `${process.env.REACT_APP_API_BASE_URL}/data?startDate=${sd}&endDate=${ed}`
+      )
       .then((response) => {
         if (!filters) {
           const uniqueVrsRsidOptions = [
@@ -117,7 +119,9 @@ function App() {
   };
 
   const fetchData = async (sd, ed, filters = false) => {
-    console.log(`http://localhost:3001/api/data?startDate=${sd}&endDate=${ed}`);
+    console.log(
+      `${process.env.REACT_APP_API_BASE_URL}/data?startDate=${sd}&endDate=${ed}`
+    );
     try {
       await fetchDataWithCache(sd, ed, filters);
     } catch (error) {
@@ -135,7 +139,7 @@ function App() {
 
     const requestScatterPromise = axios
       .get(
-        `http://localhost:3001/api/scatterData?startDate=${sd}&endDate=${ed}`
+        `${process.env.REACT_APP_API_BASE_URL}/scatterData?startDate=${sd}&endDate=${ed}`
       )
       .then((scatter) => {
         setScatterData(scatter.data);
@@ -171,7 +175,7 @@ function App() {
 
   const fetchScatter = async (sd, ed, filters = false) => {
     console.log(
-      `http://localhost:3001/api/scatterData?startDate=${sd}&endDate=${ed}`
+      `${process.env.REACT_APP_API_BASE_URL}/scatterData?startDate=${sd}&endDate=${ed}`
     );
     try {
       await fetchScatterWithCache(sd, ed, filters);
