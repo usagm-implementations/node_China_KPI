@@ -5,9 +5,9 @@ import AreaSplineChart from "./areaspline";
 import { getSums, transformData } from "./leaderboard";
 import "./App.css";
 
-const RFAVOAComponent = ({ data, filteredData }) => {
+const RFAVOAComponent = ({ data }) => {
   const [loading, setLoading] = useState(true);
-  const chartData = filteredData.length !== 0 ? filteredData : data;
+  // const chartData = filteredData.length !== 0 ? filteredData : data;
 
   const RFAComponent = useRef(null);
   const VOAComponent = useRef(null);
@@ -44,46 +44,53 @@ const RFAVOAComponent = ({ data, filteredData }) => {
   ];
 
   const RFATrend = transformData(
-    getSums("entity", "RFA", properties, chartData, true),
+    getSums("entity", "RFA", properties, data, true),
     "field",
     newProperties
   ).pop();
-  RFATrend.audio_play.yAxis = undefined;
-  RFATrend.video_play_e5.yAxis = undefined;
-  const RFASeries = {
-    dts: RFATrend.dts,
-    field: RFATrend.field,
-    legend: false,
-    series: [
-      RFATrend.page_views,
-      RFATrend.article_views,
-      RFATrend.visits,
-      RFATrend.return_visits,
-      RFATrend.audio_play,
-      RFATrend.video_play_e5,
-    ],
-  };
+  let RFASeries;
+  if (RFATrend !== undefined) {
+    RFATrend.audio_play.yAxis = undefined;
+    RFATrend.video_play_e5.yAxis = undefined;
+    RFASeries = {
+      dts: RFATrend.dts,
+      field: RFATrend.field,
+      legend: false,
+      series: [
+        RFATrend.page_views,
+        RFATrend.article_views,
+        RFATrend.visits,
+        RFATrend.return_visits,
+        RFATrend.audio_play,
+        RFATrend.video_play_e5,
+      ],
+    };
+  }
 
   const VOATrend = transformData(
-    getSums("entity", "VOA", properties, chartData),
+    getSums("entity", "VOA", properties, data),
     "field",
     newProperties
   ).pop();
-  VOATrend.audio_play.yAxis = undefined;
-  VOATrend.video_play_e5.yAxis = undefined;
-  const VOASeries = {
-    dts: VOATrend.dts,
-    field: VOATrend.field,
-    legend: true,
-    series: [
-      VOATrend.page_views,
-      VOATrend.article_views,
-      VOATrend.visits,
-      VOATrend.return_visits,
-      VOATrend.audio_play,
-      VOATrend.video_play_e5,
-    ],
-  };
+
+  let VOASeries;
+  if (VOATrend !== undefined) {
+    VOATrend.audio_play.yAxis = undefined;
+    VOATrend.video_play_e5.yAxis = undefined;
+    VOASeries = {
+      dts: VOATrend.dts,
+      field: VOATrend.field,
+      legend: true,
+      series: [
+        VOATrend.page_views,
+        VOATrend.article_views,
+        VOATrend.visits,
+        VOATrend.return_visits,
+        VOATrend.audio_play,
+        VOATrend.video_play_e5,
+      ],
+    };
+  }
 
   useEffect(() => {
     const delay = setTimeout(() => {

@@ -4,17 +4,16 @@ import HighchartsReact from "highcharts-react-official";
 import highchartsAccessibility from "highcharts/modules/accessibility";
 import highchartsExporting from "highcharts/modules/exporting";
 import highchartsExportData from "highcharts/modules/export-data";
+import highchartsPackedbubble from "highcharts/highcharts-more";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
 highchartsAccessibility(Highcharts);
 highchartsExporting(Highcharts);
 highchartsExportData(Highcharts);
+highchartsPackedbubble(Highcharts);
 
-const sharedLegendOptions = () => {
-  const container = document.querySelector(".rfaArea");
-};
-const ScatterChart = ({ dates, nm, lgnd, trendData }) => {
+const ScatterChart = ({ bubbleData, scatterData }) => {
   dayjs.locale("en");
   const addCommas = (x) =>
     x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
@@ -22,12 +21,8 @@ const ScatterChart = ({ dates, nm, lgnd, trendData }) => {
   const options = useMemo(
     () => ({
       chart: {
-        type: "areaspline",
+        type: "packedbubble",
         backgroundColor: "#283347",
-        zoomType: "x",
-        height: "25%",
-        // marginRight: 120,
-        // marginLeft: -10,
       },
       exporting: {
         enabled: true,
@@ -39,87 +34,69 @@ const ScatterChart = ({ dates, nm, lgnd, trendData }) => {
           x: -5,
         },
       },
-      title: {
-        text: nm,
-        style: {
-          color: "#fff",
-        },
-      },
-      xAxis: {
-        categories: dates,
-        lineColor: "#fff",
-        lineWidth: 3,
-        labels: {
-          style: {
-            color: "#fff",
-          },
-        },
-      },
-      yAxis: {
-        gridLineColor: "#283347",
-        lineColor: "#fff",
-        lineWidth: 3,
-        labels: {
-          style: {
-            color: "#fff",
-          },
-        },
-        title: {
-          text: "",
-        },
-        opposite: false,
-      },
-      legend: {
-        enabled: lgnd,
-        itemStyle: {
-          color: "#fff",
-        },
-      },
       accessibility: {
         enabled: false,
       },
       credits: {
         enabled: false,
       },
+      legend: {
+        enabled: true,
+        itemStyle: {
+          color: "#fff",
+        },
+      },
       tooltip: {
         backgroundColor: "#283347",
         style: { color: "#fff" },
         formatter: function () {
-          const yFormat = addCommas(this.y);
-          let tooltip = `
-                <span><b><u>${dayjs(this.key).format(
-                  "MMM DD, YYYY"
-                )}</u></b>: ${yFormat}</span>`;
-          return tooltip;
+          if (this.y !== undefined || this.key !== undefined) {
+            let tooltip = `<span><b><u>${this.key}</u></b>: ${addCommas(
+              this.y
+            )}</span>`;
+            return tooltip;
+          }
         },
         useHTML: true,
       },
       plotOptions: {
-        series: {
-          stacking: "normal",
-          marker: {
-            enabled: false,
-            states: {
-              hover: {
-                enabled: true,
-              },
+        packedbubble: {
+          minSize: "20%",
+          maxSize: "100%",
+          zMin: 0,
+          zMax: 1000,
+          layoutAlgorithm: {
+            gravitationalConstant: 0.05,
+            splitSeries: true,
+            seriesInteraction: false,
+            dragBetweenSeries: true,
+            parentNodeLimit: true,
+          },
+          dataLabels: {
+            enabled: true,
+            format: "{point.name}",
+            filter: {
+              property: "y",
+              operator: ">",
+              value: 250,
+            },
+            style: {
+              color: "black",
+              textOutline: "none",
+              fontWeight: "normal",
             },
           },
-          events: { legendItemClick: lgnd ? sharedLegendOptions() : undefined },
         },
       },
-      series: trendData,
+      series: bubbleData,
+      drilldown: {
+        series: scatterData,
+      },
     }),
-    [nm, dates, lgnd, trendData]
+    [bubbleData, scatterData]
   );
-  //   console.log(document.querySelector(".rfaArea"));
-  return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      containerProps={{ className: `${nm}-area` }}
-      options={options}
-    />
-  );
+
+  return <HighchartsReact highcharts={Highcharts} options={options} />;
 };
 
 export default ScatterChart;

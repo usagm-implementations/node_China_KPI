@@ -23,6 +23,7 @@ import LeaderboardComponent from "./leaderboard";
 import KPIComponent from "./kpiComponent";
 import RFAVOAComponent from "./areasplineComponent";
 import VRSIdComponent from "./vrsComponent";
+import ScatterComponent from "./scatterComponent";
 
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -37,12 +38,14 @@ function App() {
   };
 
   const [data, setData] = useState([]);
+  const [scatterData, setScatterData] = useState([]);
   const [dateRange, setDateRange] = useState([null, null]);
   const [vrsRsidOptions, setVrsRsidOptions] = useState([]);
   const [selectedVrsRsid, setSelectedVrsRsid] = useState([]);
   const [entityOptions, setEntityOptions] = useState([]);
   const [selectedEntity, setSelectedEntity] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [filteredScatter, setFilteredScatter] = useState([]);
   const [isDataFetched, setIsDataFetched] = useState(false);
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -54,9 +57,10 @@ function App() {
     },
   ]);
   const promiseCache = useRef(new Map());
+  const promiseScatter = useRef(new Map());
 
   const fetchDataWithCache = async (sd, ed, filters = false) => {
-    const cacheKey = `${sd}_${ed}_${filters}`;
+    const cacheKey = `data-${sd}_${ed}_${filters}`;
 
     if (promiseCache.current.has(cacheKey)) {
       console.log("CACHE HIT!");
@@ -120,6 +124,61 @@ function App() {
     }
   };
 
+  const fetchScatterWithCache = async (sd, ed, filters = false) => {
+    const cacheKey = `scatter-${sd}_${ed}_${filters}`;
+
+    if (promiseScatter.current.has(cacheKey)) {
+      console.log("CACHE SCATTER!");
+      return promiseScatter.current.get(cacheKey);
+    }
+
+    const requestScatterPromise = axios
+      .get(
+        `http://localhost:3001/api/scatterData?startDate=${sd}&endDate=${ed}`
+      )
+      .then((scatter) => {
+        setScatterData(scatter.data);
+        setIsDataFetched(true);
+
+        if (filters) {
+          const selectedFilters = {
+            entity: selectedEntity.map((option) => option.value),
+          };
+          console.log(selectedFilters);
+          const filteredData = scatter.data.filter((item) => {
+            return (
+              !selectedFilters.entity.length ||
+              selectedFilters.entity.includes(item.entity)
+            );
+          });
+          console.log(filteredData);
+          setFilteredScatter(filteredData);
+        }
+        // console.log(JSON.stringify(response.data));
+        console.log(scatter.data);
+        return scatter.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        throw error;
+      });
+
+    promiseScatter.current.set(cacheKey, requestScatterPromise);
+
+    return requestScatterPromise;
+  };
+
+  const fetchScatter = async (sd, ed, filters = false) => {
+    console.log(
+      `http://localhost:3001/api/scatterData?startDate=${sd}&endDate=${ed}`
+    );
+    try {
+      await fetchScatterWithCache(sd, ed, filters);
+    } catch (error) {
+      console.error("Error fetching scatter:", error);
+    }
+  };
+
   const updateFilters = (elem, item) => {
     const selectData = filteredData.length !== 0 ? filteredData : data;
     const filtersData = selectData.filter((d) =>
@@ -152,6 +211,7 @@ function App() {
 
     setDateRange([startDate, endDate]);
     fetchData(formatDate(startDate), formatDate(endDate));
+    fetchScatter(formatDate(startDate), formatDate(endDate));
   }, []);
 
   const customStaticRanges = [
@@ -235,6 +295,11 @@ function App() {
 
     try {
       await fetchData(
+        formatDate(selection[0].startDate),
+        formatDate(selection[0].endDate),
+        true
+      );
+      await fetchScatter(
         formatDate(selection[0].startDate),
         formatDate(selection[0].endDate),
         true
@@ -348,9 +413,7 @@ function App() {
           </div>
         ) : (
           <div className="area m-2 w-100 clearfix d-flex">
-            {isDataFetched && (
-              <RFAVOAComponent data={data} filteredData={filteredData} />
-            )}
+            {isDataFetched && <RFAVOAComponent data={data} />}
           </div>
         )}
         {dashboardLoading ? (
@@ -384,6 +447,28 @@ function App() {
       ) : (
         <div className="vrsArea m-2 w-100 clearfix d-flex">
           {isDataFetched && <VRSIdComponent data={data} />}
+        </div>
+      )}
+
+      {dashboardLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <div className="scatterPlot m-2 w-100 clearfix d-flex">
+          {isDataFetched && (
+            <ScatterComponent
+              data={scatterData}
+              filteredData={filteredScatter}
+            />
+          )}
         </div>
       )}
 
