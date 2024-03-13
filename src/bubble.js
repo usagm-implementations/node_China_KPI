@@ -13,7 +13,7 @@ highchartsExporting(Highcharts);
 highchartsExportData(Highcharts);
 highchartsPackedbubble(Highcharts);
 
-const ScatterChart = ({ nm, scatterData }) => {
+const BubbleChart = ({ bubbleData, scatterData }) => {
   dayjs.locale("en");
   const addCommas = (x) =>
     x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
@@ -21,9 +21,8 @@ const ScatterChart = ({ nm, scatterData }) => {
   const options = useMemo(
     () => ({
       chart: {
-        type: "scatter",
+        type: "packedbubble",
         backgroundColor: "#283347",
-        zoomType: "xy",
       },
       exporting: {
         enabled: true,
@@ -33,12 +32,6 @@ const ScatterChart = ({ nm, scatterData }) => {
           verticalAlign: "top",
           y: -10,
           x: -5,
-        },
-      },
-      title: {
-        text: nm,
-        style: {
-          color: "#fff",
         },
       },
       accessibility: {
@@ -52,30 +45,6 @@ const ScatterChart = ({ nm, scatterData }) => {
         itemStyle: {
           color: "#fff",
         },
-      },
-      xAxis: {
-        type: "datetime",
-        lineColor: "#fff",
-        lineWidth: 3,
-        labels: {
-          style: {
-            color: "#fff",
-          },
-        },
-      },
-      yAxis: {
-        gridLineColor: "#283347",
-        lineColor: "#fff",
-        lineWidth: 3,
-        labels: {
-          style: {
-            color: "#000",
-          },
-        },
-        title: {
-          text: "",
-        },
-        opposite: false,
       },
       tooltip: {
         backgroundColor: "#283347",
@@ -91,35 +60,43 @@ const ScatterChart = ({ nm, scatterData }) => {
         useHTML: true,
       },
       plotOptions: {
-        scatter: {
-          marker: {
-            radius: 2.5,
-            symbol: "circle",
-            states: {
-              hover: {
-                enabled: true,
-                lineColor: "rgb(100,100,100)",
-              },
-            },
+        packedbubble: {
+          minSize: "20%",
+          maxSize: "100%",
+          zMin: 0,
+          zMax: 1000,
+          layoutAlgorithm: {
+            gravitationalConstant: 0.05,
+            splitSeries: true,
+            seriesInteraction: false,
+            dragBetweenSeries: true,
+            parentNodeLimit: true,
           },
-          states: {
-            hover: {
-              marker: {
-                enabled: false,
-              },
+          dataLabels: {
+            enabled: true,
+            format: "{point.name}",
+            filter: {
+              property: "y",
+              operator: ">",
+              value: 250,
             },
-          },
-          jitter: {
-            x: 0.005,
+            style: {
+              color: "black",
+              textOutline: "none",
+              fontWeight: "normal",
+            },
           },
         },
       },
-      series: scatterData,
+      series: bubbleData,
+      // drilldown: {
+      //   series: scatterData,
+      // },
     }),
-    [nm, scatterData]
+    [bubbleData, scatterData]
   );
 
   return <HighchartsReact highcharts={Highcharts} options={options} />;
 };
 
-export default ScatterChart;
+export default BubbleChart;

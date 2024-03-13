@@ -23,7 +23,8 @@ import LeaderboardComponent from "./leaderboard";
 import KPIComponent from "./kpiComponent";
 import RFAVOAComponent from "./areasplineComponent";
 import VRSIdComponent from "./vrsComponent";
-import ScatterComponent from "./scatterComponent";
+import BubbleComponent from "./bubbleComponent";
+// import ScatterComponent from "./scatterComponent";
 
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -462,15 +463,32 @@ function App() {
           <Spinner animation="border" variant="dark" />
         </div>
       ) : (
-        <div className="scatterPlot m-2 w-100 clearfix d-flex">
+        <div className="bubblePlot m-2 w-100 clearfix d-flex">
           {isDataFetched && (
-            <ScatterComponent
+            <BubbleComponent
               data={scatterData}
               filteredData={filteredScatter}
             />
           )}
         </div>
       )}
+
+      {/* {dashboardLoading ? (
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <Spinner animation="border" variant="secondary" />
+          <Spinner animation="border" variant="success" />
+          <Spinner animation="border" variant="danger" />
+          <Spinner animation="border" variant="warning" />
+          <Spinner animation="border" variant="info" />
+          <Spinner animation="border" variant="light" />
+          <Spinner animation="border" variant="dark" />
+        </div>
+      ) : (
+        <div className="scatterPlot m-2 w-100 clearfix d-flex">
+          {isDataFetched && <ScatterComponent data={scatterData} />}
+        </div>
+      )} */}
 
       {dashboardLoading ? (
         <div className="text-center">

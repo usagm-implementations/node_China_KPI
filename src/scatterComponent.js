@@ -3,121 +3,107 @@ import { Spinner } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ScatterChart from "./scatter";
 import "./App.css";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
-const ScatterComponent = ({ data, filteredData }) => {
+const ScatterComponent = ({ data }) => {
+  dayjs.locale("en");
   const [loading, setLoading] = useState(true);
-  const chartData = filteredData.length !== 0 ? filteredData : data;
 
-  const properties = [
-    "page_views",
-    "article_views",
-    "visits",
-    "return_visits",
-    "audio_play",
-    "video_play_e5",
-  ];
-
-  const sumData = (data, properties) => {
-    const groupedData = data.reduce((groups, item) => {
-      const { entity, ...rest } = item;
-      if (!groups[entity]) {
-        groups[entity] = { entity };
-        properties.forEach((prop) => {
-          groups[entity][prop] = 0;
-        });
-      }
-      properties.forEach((prop) => {
-        groups[entity][prop] += item[prop];
-      });
-      return groups;
-    }, {});
-
-    return Object.values(groupedData);
-  };
-
-  const bubbleSeries = sumData(chartData, properties).map((item) => {
-    const { entity, ...rest } = item;
-    const data = Object.entries(rest).map(([key, value]) => ({
-      name: key,
-      value: value,
-      drilldown: `${entity} - ${key}`,
-    }));
-    return { name: entity, data };
-  });
-
-  //   console.log(JSON.stringify(bubbleSeries));
-  const RFAPV = chartData
+  const RFAPV = data
     .filter((d) => d.entity === "RFA")
     .map((d) => [d.report_end_date, d.page_views]);
-  const VOAPV = chartData
+  const VOAPV = data
     .filter((d) => d.entity === "VOA")
-    .map((d) => [d.report_end_date, d.page_views]);
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.page_views,
+    ]);
 
-  const RFAAV = chartData
+  const RFAAV = data
     .filter((d) => d.entity === "RFA")
-    .map((d) => [d.report_end_date, d.article_views]);
-  const VOAAV = chartData
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.article_views,
+    ]);
+  const VOAAV = data
     .filter((d) => d.entity === "VOA")
-    .map((d) => [d.report_end_date, d.article_views]);
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.article_views,
+    ]);
 
-  const RFAVisits = chartData
+  const RFAVisits = data
     .filter((d) => d.entity === "RFA")
-    .map((d) => [d.report_end_date, d.visits]);
-  const VOAVisits = chartData
+    .map((d) => [dayjs(d.report_end_date).format("MMM DD, YYYY"), d.visits]);
+  const VOAVisits = data
     .filter((d) => d.entity === "VOA")
-    .map((d) => [d.report_end_date, d.visits]);
+    .map((d) => [dayjs(d.report_end_date).format("MMM DD, YYYY"), d.visits]);
 
-  const RFARV = chartData
+  const RFARV = data
     .filter((d) => d.entity === "RFA")
-    .map((d) => [d.report_end_date, d.return_visits]);
-  const VOARV = chartData
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.return_visits,
+    ]);
+  const VOARV = data
     .filter((d) => d.entity === "VOA")
-    .map((d) => [d.report_end_date, d.return_visits]);
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.return_visits,
+    ]);
 
-  const RFAAP = chartData
+  const RFAAP = data
     .filter((d) => d.entity === "RFA")
-    .map((d) => [d.report_end_date, d.audio_play]);
-  const VOAAP = chartData
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.audio_play,
+    ]);
+  const VOAAP = data
     .filter((d) => d.entity === "VOA")
-    .map((d) => [d.report_end_date, d.audio_play]);
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.audio_play,
+    ]);
 
-  const RFAVP = chartData
+  const RFAVP = data
     .filter((d) => d.entity === "RFA")
-    .map((d) => [d.report_end_date, d.video_play_e5]);
-  const VOAVP = chartData
+    .map((d) => [
+      dayjs(d.report_end_date).format("MMM DD, YYYY"),
+      d.video_play_e5,
+    ]);
+  const VOAVP = data
     .filter((d) => d.entity === "VOA")
     .map((d) => [d.report_end_date, d.video_play_e5]);
 
   const scatterSeries = [];
   scatterSeries.push(
-    { type: "scatter", id: `RFA - page_views`, data: RFAPV },
-    { type: "scatter", id: `RFA - article_views`, data: RFAAV },
-    { type: "scatter", id: `RFA - visits`, data: RFAVisits },
-    { type: "scatter", id: `RFA - return_visits`, data: RFARV },
-    { type: "scatter", id: `RFA - audio_play`, data: RFAAP },
-    { type: "scatter", id: `RFA - video_play_e5`, data: RFAVP },
-    { type: "scatter", id: `VOA - page_views`, data: VOAPV },
-    { type: "scatter", id: `VOA - article_views`, data: VOAAV },
-    { type: "scatter", id: `VOA - visits`, data: VOAVisits },
-    { type: "scatter", id: `VOA - return_visits`, data: VOARV },
-    { type: "scatter", id: `VOA - audio_play`, data: VOAAP },
-    { type: "scatter", id: `VOA - video_play_e5`, data: VOAVP }
+    { name: "Page Views", id: `RFA-page_views`, data: RFAPV }
+    // { name: "Article Views", id: `RFA-article_views`, data: RFAAV },
+    // { name: "Visits", id: `RFA-visits`, data: RFAVisits },
+    // { name: "Return Visits", id: `RFA-return_visits`, data: RFARV },
+    // { name: "Audio Play", id: `RFA-audio_play`, data: RFAAP },
+    // { name: "Video Play", id: `RFA-video_play_e5`, data: RFAVP }
+    // { type: "scatter", id: `VOA-page_views`, data: VOAPV },
+    // { type: "scatter", id: `VOA-article_views`, data: VOAAV },
+    // { type: "scatter", id: `VOA-visits`, data: VOAVisits },
+    // { type: "scatter", id: `VOA-return_visits`, data: VOARV },
+    // { type: "scatter", id: `VOA-audio_play`, data: VOAAP },
+    // { type: "scatter", id: `VOA-video_play_e5`, data: VOAVP }
   );
-
-  //   console.log(JSON.stringify(scatterSeries));
-
+  // console.log(JSON.stringify(scatterSeries));
   useEffect(() => {
     const delay = setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 5000);
 
     return () => clearTimeout(delay);
   }, []);
 
   return (
-    <div className="bubbleScatterTrends clearfix w-100 column">
+    <div className="scatterTrends clearfix w-100 column">
       <h3 className="mt-1 ms-1" style={{ color: "#81b0d2" }}>
-        <u>RFA-VOA Breakdowns</u>
+        <u>RFA-VOA Scatter</u>
       </h3>
       {loading ? (
         <div className="text-center">
@@ -133,11 +119,8 @@ const ScatterComponent = ({ data, filteredData }) => {
       ) : (
         <div className="clearfix w-100 column">
           <div className="clearfix w-100 column">
-            <div className="w-100 bubbleScatterCharts">
-              <ScatterChart
-                bubbleData={bubbleSeries}
-                scatterData={scatterSeries}
-              />
+            <div className="w-100 scatterCharts">
+              <ScatterChart nm={"ztest"} scatterData={scatterSeries} />
             </div>
           </div>
         </div>
